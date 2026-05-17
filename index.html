@@ -17,7 +17,7 @@
         .tab-content { display: none; flex: 1; }
         .tab-content.active { display: block; }
 
-        /* カレンダータブ */
+        /* カレンダー */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: bold; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-bottom: 20px; }
         .weekday { font-size: 12px; font-weight: bold; color: #718096; padding-bottom: 5px; }
@@ -37,15 +37,29 @@
         .record-form-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
         .form-label { font-size: 12px; font-weight: bold; color: #4a5568; display: block; margin-top: 8px; margin-bottom: 4px; }
         .form-label:first-child { margin-top: 0; }
-        input[type="text"].form-input, textarea.form-textarea { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 6px; padding: 8px; font-size: 14px; }
+        input[type="text"].form-input, textarea.form-textarea { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 6px; padding: 8px; font-size: 14px; margin-bottom: 4px; }
         textarea.form-textarea { height: 70px; resize: none; }
-        .form-submit-btn { width: 100%; margin-top: 10px; background: #1a365d; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .form-submit-btn { width: 100%; margin-top: 12px; background: #1a365d; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* 文献タイプ切り替えラジオ */
+        .source-type-selector { display: flex; gap: 10px; margin-bottom: 10px; background: #edf2f7; padding: 6px; border-radius: 6px; }
+        .source-type-label { flex: 1; text-align: center; font-size: 12px; font-weight: bold; color: #4a5568; cursor: pointer; padding: 4px; border-radius: 4px; display: block; }
+        .source-type-label input { display: none; }
+        .source-type-label:has(input:checked) { background: white; color: #1a365d; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        /* 動的フォームのコンテナ */
+        .dynamic-fields { border-left: 2px solid #cbd5e0; padding-left: 8px; margin-bottom: 8px; }
 
         /* 記録カード表示スタイル */
         .note-card-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .note-item-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .note-item-header { display: flex; justify-content: space-between; font-size: 11px; color: #718096; font-weight: bold; margin-bottom: 6px; border-bottom: 1px dashed #edf2f7; padding-bottom: 4px; }
-        .note-item-source { font-size: 13px; font-weight: bold; color: #1a365d; margin-bottom: 6px; }
+        .note-item-source { font-size: 13px; font-weight: bold; color: #1a365d; margin-bottom: 6px; line-height: 1.4; }
+        .source-tag { inline-size: max-content; font-size: 10px; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; display: inline-block; margin-right: 4px; vertical-align: middle; }
+        .tag-book { background: #3182ce; }
+        .tag-journal { background: #805ad5; }
+        .tag-web { background: #319795; }
+        
         .note-item-quote { font-size: 13px; color: #4a5568; background: #f7fafc; border-left: 3px solid #cbd5e0; padding: 6px 8px; margin: 6px 0; font-style: italic; white-space: pre-wrap; }
         .note-item-comment { font-size: 13px; color: #2d3748; white-space: pre-wrap; line-height: 1.4; margin-top: 6px; }
 
@@ -100,8 +114,17 @@
             <!-- 新規ノート追加用フォーム -->
             <h3>📝 新しい読書・研究記録を追加</h3>
             <div class="record-form-box">
-                <label class="form-label">文献・ソース情報</label>
-                <input type="text" id="formSource" class="form-input" placeholder="例: 山田太郎『研究方法論』p.120">
+                <label class="form-label">文献タイプ</label>
+                <div class="source-type-selector">
+                    <label class="source-type-label"><input type="radio" name="sourceType" value="book" checked onchange="toggleSourceFields()">書籍</label>
+                    <label class="source-type-label"><input type="radio" name="sourceType" value="journal" onchange="toggleSourceFields()">雑誌・論文</label>
+                    <label class="source-type-label"><input type="radio" name="sourceType" value="web" onchange="toggleSourceFields()">Webサイト</label>
+                </div>
+
+                <!-- 動的入力欄コンテナ -->
+                <div id="dynamicFields" class="dynamic-fields">
+                    <!-- JavaScriptでここにフィールドを生成します -->
+                </div>
                 
                 <label class="form-label">抜き書き・引用句（空欄でも可）</label>
                 <textarea id="formQuote" class="form-textarea" placeholder="文献からそのまま書き写す部分..."></textarea>
@@ -139,7 +162,8 @@
                 <select id="memoSortSelect" class="control-select" onchange="renderMemoGrid()">
                     <option value="newest">日付の新しい順</option>
                     <option value="oldest">日付の古い順</option>
-                    <option value="source">文献名順（書籍ごとにまとめる）</option>
+                    <option value="title">文献タイトル順</option>
+                    <option value="author">著者名順</option>
                 </select>
             </div>
         </div>
@@ -185,17 +209,16 @@
 </div>
 
 <script>
-    const STORAGE_KEY = 'myMultiResearchApp_v2';
-    let appData = {}; // 構造: { "YYYY-MM-DD": { notes: [ {source, quote, comment, id} ], tasks: [ {text, priority} ] } }
+    const STORAGE_KEY = 'myMultiResearchApp_v3';
+    let appData = {}; 
     let currentDisplayDate = new Date(); 
     let selectedDateStr = "";
 
     const calendarTitle = document.getElementById('calendarTitle');
     const calendarGrid = document.getElementById('calendarGrid');
     const selectedDateTitle = document.getElementById('selectedDateTitle');
+    const dynamicFields = document.getElementById('dynamicFields');
     
-    // 入力フォーム群
-    const formSource = document.getElementById('formSource');
     const formQuote = document.getElementById('formQuote');
     const formComment = document.getElementById('formComment');
     
@@ -215,6 +238,7 @@
             appData = JSON.parse(savedData);
         }
         selectedDateStr = formatDate(new Date());
+        toggleSourceFields(); // 初期の文献入力欄を生成
         renderCalendar();
         renderActiveDateData();
     }
@@ -224,6 +248,54 @@
         const m = String(dateObj.getMonth() + 1).padStart(2, '0');
         const d = String(dateObj.getDate()).padStart(2, '0');
         return `${y}-${m}-${d}`;
+    }
+
+    // 文献タイプ別に入力フォームを動的に生成
+    function toggleSourceFields() {
+        const type = document.querySelector('input[name="sourceType"]:checked').value;
+        let html = '';
+
+        if (type === 'book') {
+            html = `
+                <label class="form-label">書籍名 *</label>
+                <input type="text" id="f_title" class="form-input" placeholder="例: 学術書のデザイン">
+                <label class="form-label">著者名</label>
+                <input type="text" id="f_author" class="form-input" placeholder="例: 山田太郎">
+                <label class="form-label">出版社</label>
+                <input type="text" id="f_publisher" class="form-input" placeholder="例: 未来出版">
+                <label class="form-label">出版年</label>
+                <input type="text" id="f_year" class="form-input" placeholder="例: 2024">
+                <label class="form-label">該当ページ（範囲）</label>
+                <input type="text" id="f_pages" class="form-input" placeholder="例: pp.45-50">
+            `;
+        } else if (type === 'journal') {
+            html = `
+                <label class="form-label">論文・記事タイトル *</label>
+                <input type="text" id="f_title" class="form-input" placeholder="例: ○○に関する比較研究">
+                <label class="form-label">著者名</label>
+                <input type="text" id="f_author" class="form-input" placeholder="例: 佐藤花子">
+                <label class="form-label">掲載雑誌・ジャーナル名</label>
+                <input type="text" id="f_journal" class="form-input" placeholder="例: 月刊 社会科学評論">
+                <label class="form-label">巻・号・発行元</label>
+                <input type="text" id="f_volume" class="form-input" placeholder="例: 第12巻 第3号 / △△学会">
+                <label class="form-label">発行年</label>
+                <input type="text" id="f_year" class="form-input" placeholder="例: 2025">
+                <label class="form-label">掲載ページ</label>
+                <input type="text" id="f_pages" class="form-input" placeholder="例: p.12-25">
+            `;
+        } else if (type === 'web') {
+            html = `
+                <label class="form-label">ウェブページ・記事名 *</label>
+                <input type="text" id="f_title" class="form-input" placeholder="例: デジタルアーカイブの現状">
+                <label class="form-label">ウェブサイト・組織名</label>
+                <input type="text" id="f_site" class="form-input" placeholder="例: 国立データ総研コラム">
+                <label class="form-label">URL</label>
+                <input type="text" id="f_url" class="form-input" placeholder="例: https://example.com/article">
+                <label class="form-label">確認日 / 更新年</label>
+                <input type="text" id="f_year" class="form-input" placeholder="例: 2026年5月閲覧">
+            `;
+        }
+        dynamicFields.innerHTML = html;
     }
 
     function switchTab(tabName) {
@@ -244,6 +316,30 @@
             document.getElementById('tab-tasks').classList.add('active');
             renderAllTasks();
         }
+    }
+
+    // 構造化された文献データからきれいな引用文字列を作るヘルパー
+    function formatSourceText(sourceObj) {
+        if (!sourceObj) return '文献情報なし';
+        const t = sourceObj.type;
+        const title = sourceObj.title || '（タイトル不明）';
+        const author = sourceObj.author ? `${sourceObj.author} ` : '';
+        const year = sourceObj.year ? `(${sourceObj.year})` : '';
+        const pages = sourceObj.pages ? ` ${sourceObj.pages}` : '';
+
+        if (t === 'book') {
+            const pub = sourceObj.publisher ? `, ${sourceObj.publisher}` : '';
+            return `<span class="source-tag tag-book">書籍</span> <strong>『${escapeHtml(title)}』</strong> ${escapeHtml(author)}${escapeHtml(pub)}${escapeHtml(year)}${escapeHtml(pages)}`;
+        } else if (t === 'journal') {
+            const j = sourceObj.journal ? ` 『${sourceObj.journal}』` : '';
+            const v = sourceObj.volume ? ` ${sourceObj.volume}` : '';
+            return `<span class="source-tag tag-journal">雑誌・論文</span> 「${escapeHtml(title)}」 ${escapeHtml(author)}${escapeHtml(j)}${escapeHtml(v)}${escapeHtml(year)}${escapeHtml(pages)}`;
+        } else if (t === 'web') {
+            const s = sourceObj.site ? ` (${sourceObj.site})` : '';
+            const url = sourceObj.url ? `<br><a href="${escapeHtml(sourceObj.url)}" target="_blank" style="font-size:11px; color:#319795;">${escapeHtml(sourceObj.url)}</a>` : '';
+            return `<span class="source-tag tag-web">Web</span> <strong>${escapeHtml(title)}</strong>${escapeHtml(s)} ${escapeHtml(year)}${url}`;
+        }
+        return escapeHtml(title);
     }
 
     function renderCalendar() {
@@ -300,10 +396,10 @@
                 card.className = 'note-item-card';
                 card.innerHTML = `
                     <div class="note-item-header">
-                        <span>CARD ID: ${note.id.substring(0,8)}</span>
-                        <button class="delete-btn" onclick="deleteResearchNote('${note.id}')">カード削除</button>
+                        <span>CARD: ${note.id.substring(5,12)}</span>
+                        <button class="delete-btn" onclick="deleteResearchNote('${note.id}')">削除</button>
                     </div>
-                    <div class="note-item-source">📖 ${escapeHtml(note.source || '不明な文献')}</div>
+                    <div class="note-item-source">${formatSourceText(note.sourceObj)}</div>
                     ${note.quote ? `<div class="note-item-quote">${escapeHtml(note.quote)}</div>` : ''}
                     <div class="note-item-comment">${escapeHtml(note.comment || '（考察なし）')}</div>
                 `;
@@ -328,14 +424,28 @@
     }
 
     function addResearchNote() {
-        const srcVal = formSource.value.trim();
-        const quoteVal = formQuote.value.trim();
-        const commentVal = formComment.value.trim();
-
-        if (srcVal === '' && quoteVal === '' && commentVal === '') {
-            alert('何も入力されていません。');
+        const type = document.querySelector('input[name="sourceType"]:checked').value;
+        const titleEl = document.getElementById('f_title');
+        
+        if (!titleEl || titleEl.value.trim() === '') {
+            alert('文献名（タイトル）は必須入力です。');
             return;
         }
+
+        // タイプごとのオブジェクト作成
+        const sourceObj = { type: type, title: titleEl.value.trim() };
+        
+        if (document.getElementById('f_author')) sourceObj.author = document.getElementById('f_author').value.trim();
+        if (document.getElementById('f_year')) sourceObj.year = document.getElementById('f_year').value.trim();
+        if (document.getElementById('f_pages')) sourceObj.pages = document.getElementById('f_pages').value.trim();
+        if (document.getElementById('f_publisher')) sourceObj.publisher = document.getElementById('f_publisher').value.trim();
+        if (document.getElementById('f_journal')) sourceObj.journal = document.getElementById('f_journal').value.trim();
+        if (document.getElementById('f_volume')) sourceObj.volume = document.getElementById('f_volume').value.trim();
+        if (document.getElementById('f_site')) sourceObj.site = document.getElementById('f_site').value.trim();
+        if (document.getElementById('f_url')) sourceObj.url = document.getElementById('f_url').value.trim();
+
+        const quoteVal = formQuote.value.trim();
+        const commentVal = formComment.value.trim();
 
         if (!appData[selectedDateStr]) {
             appData[selectedDateStr] = { notes: [], tasks: [] };
@@ -344,7 +454,7 @@
 
         const newNote = {
             id: 'note_' + new Date().getTime() + '_' + Math.random().toString(36).substr(2, 5),
-            source: srcVal || '文献情報未入力',
+            sourceObj: sourceObj,
             quote: quoteVal,
             comment: commentVal
         };
@@ -352,9 +462,10 @@
         appData[selectedDateStr].notes.push(newNote);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
 
-        // フォームをクリア（文献名は続けて打てるように残すか迷いますが一応クリア）
+        // 入力フォームの一部リセット（抜き書きと考察をクリア。文献の連続入力のため文献名はあえて残す仕様も可能ですが、混乱を避けるため一旦全体トグルリセット）
         formQuote.value = '';
         formComment.value = '';
+        toggleSourceFields(); 
         
         renderCalendar();
         renderActiveDateData();
@@ -375,15 +486,11 @@
         memoGrid.innerHTML = '';
         const sortOrder = memoSortSelect.value;
         
-        // 全データをフラットな配列に変換
         let allNotes = [];
         Object.keys(appData).forEach(dateStr => {
             if (appData[dateStr].notes) {
                 appData[dateStr].notes.forEach(note => {
-                    allNotes.push({
-                        ...note,
-                        date: dateStr
-                    });
+                    allNotes.push({ ...note, date: dateStr });
                 });
             }
         });
@@ -393,8 +500,10 @@
             allNotes.sort((a, b) => new Date(b.date) - new Date(a.date));
         } else if (sortOrder === 'oldest') {
             allNotes.sort((a, b) => new Date(a.date) - new Date(b.date));
-        } else if (sortOrder === 'source') {
-            allNotes.sort((a, b) => a.source.localeCompare(b.source, 'ja'));
+        } else if (sortOrder === 'title') {
+            allNotes.sort((a, b) => (a.sourceObj.title || '').localeCompare(b.sourceObj.title || '', 'ja'));
+        } else if (sortOrder === 'author') {
+            allNotes.sort((a, b) => (a.sourceObj.author || '').localeCompare(b.sourceObj.author || '', 'ja'));
         }
 
         if (allNotes.length === 0) {
@@ -411,7 +520,7 @@
                     <span>📅 記録日: ${note.date}</span>
                     <span style="color:#1a365d;">カレンダーへ移動 ➔</span>
                 </div>
-                <div class="note-item-source">📖 ${escapeHtml(note.source)}</div>
+                <div class="note-item-source">${formatSourceText(note.sourceObj)}</div>
                 ${note.quote ? `<div class="note-item-quote">${escapeHtml(note.quote)}</div>` : ''}
                 <div class="note-item-comment">${escapeHtml(note.comment)}</div>
             `;
@@ -547,6 +656,7 @@
     }
 
     function escapeHtml(str) {
+        if (!str) return '';
         return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
