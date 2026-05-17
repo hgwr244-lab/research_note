@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>研究ノート・読書記録一元管理アプリ</title>
+    <title>研究ノート・多機能読書記録アプリ</title>
     <style>
         body { font-family: sans-serif; padding: 15px; background: #f0f2f5; color: #333; margin: 0; }
-        .container { max-width: 480px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); box-sizing: border-box; min-height: 90vh; display: flex; flex-direction: column; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); box-sizing: border-box; min-height: 90vh; display: flex; flex-direction: column; }
         
         /* タブ切り替えボタン */
         .tab-menu { display: flex; background: #e2e8f0; padding: 4px; border-radius: 8px; margin-bottom: 20px; }
@@ -31,70 +31,48 @@
         /* 記録エリア（カレンダー下部） */
         .content-section { border-top: 2px solid #e2e8f0; padding-top: 15px; margin-top: 15px; }
         .selected-date-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; color: #1a365d; }
-        h3 { font-size: 14px; color: #4a5568; margin: 15px 0 5px 0; border-left: 3px solid #1a365d; padding-left: 8px; }
-        textarea { width: 100%; height: 100px; padding: 10px; font-size: 14px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; resize: none; margin-bottom: 8px; }
-        .source-input { width: 100%; padding: 8px; font-size: 13px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; margin-bottom: 5px; }
+        h3 { font-size: 14px; color: #4a5568; margin: 15px 0 8px 0; border-left: 3px solid #1a365d; padding-left: 8px; }
         
-        /* 共通ボタン・入力 */
+        /* 読書ノート入力ブロック */
+        .record-form-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 15px; }
+        .form-label { font-size: 12px; font-weight: bold; color: #4a5568; display: block; margin-top: 8px; margin-bottom: 4px; }
+        .form-label:first-child { margin-top: 0; }
+        input[type="text"].form-input, textarea.form-textarea { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 6px; padding: 8px; font-size: 14px; }
+        textarea.form-textarea { height: 70px; resize: none; }
+        .form-submit-btn { width: 100%; margin-top: 10px; background: #1a365d; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+
+        /* 記録カード表示スタイル */
+        .note-card-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .note-item-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .note-item-header { display: flex; justify-content: space-between; font-size: 11px; color: #718096; font-weight: bold; margin-bottom: 6px; border-bottom: 1px dashed #edf2f7; padding-bottom: 4px; }
+        .note-item-source { font-size: 13px; font-weight: bold; color: #1a365d; margin-bottom: 6px; }
+        .note-item-quote { font-size: 13px; color: #4a5568; background: #f7fafc; border-left: 3px solid #cbd5e0; padding: 6px 8px; margin: 6px 0; font-style: italic; white-space: pre-wrap; }
+        .note-item-comment { font-size: 13px; color: #2d3748; white-space: pre-wrap; line-height: 1.4; margin-top: 6px; }
+
+        /* 共通ボタン・リスト */
         .input-area { display: flex; gap: 10px; margin-bottom: 10px; margin-top: 5px; }
-        input[type="text"] { flex: 1; padding: 10px; font-size: 15px; border: 1px solid #cbd5e0; border-radius: 6px; }
-        button { padding: 10px 15px; font-size: 14px; background: #1a365d; color: white; border: none; border-radius: 6px; cursor: pointer; }
+        .task-input-field { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #cbd5e0; border-radius: 6px; }
         ul { list-style: none; padding: 0; margin: 0; }
-        
-        /* タスクのリスト表示（研究活動タイプ別） */
-        li { padding: 12px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; font-size: 14px; margin-bottom: 4px; border-radius: 6px; }
-        .delete-btn { background: #e53e3e; padding: 4px 8px; font-size: 12px; border-radius: 4px; color: white; border: none; cursor: pointer; }
+        li { padding: 10px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 4px; border-radius: 6px; }
+        .delete-btn { background: #e53e3e; padding: 4px 8px; font-size: 11px; border-radius: 4px; color: white; border: none; cursor: pointer; margin-left: 10px; }
 
-        /* 研究活動タイプ別のカラークラス */
-        li.type-reading { background-color: #f7fafc; border-left: 5px solid #3182ce; }   /* 文献読解（青） */
-        li.type-research { background-color: #f7fafc; border-left: 5px solid #dd6b20; }  /* 実験・調査（橙） */
-        li.type-writing { background-color: #f7fafc; border-left: 5px solid #38a169; }   /* 論文執筆（緑） */
+        /* カテゴリークラス */
+        li.type-reading { background-color: #f7fafc; border-left: 5px solid #3182ce; }
+        li.type-research { background-color: #f7fafc; border-left: 5px solid #dd6b20; }
+        li.type-writing { background-color: #f7fafc; border-left: 5px solid #38a169; }
 
-        /* ラジオボタン */
-        .priority-selector { display: flex; gap: 12px; margin: 8px 0; font-size: 13px; align-items: center; flex-wrap: wrap; }
+        .priority-selector { display: flex; gap: 12px; margin: 8px 0; font-size: 13px; align-items: center; }
         .priority-label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
         .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
         .dot.reading { background: #3182ce; }
         .dot.research { background: #dd6b20; }
         .dot.writing { background: #38a169; }
 
-        /* コントロールパネル */
         .controls-panel { background: #f7fafc; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
-        .control-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #4a5568; margin-bottom: 8px; }
-        .control-row:last-child { margin-bottom: 0; }
-        .control-select { padding: 5px 8px; font-size: 13px; border: 1px solid #cbd5e0; border-radius: 6px; background: white; color: #333; cursor: pointer; outline: none; }
+        .control-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #4a5568; }
+        .control-select { padding: 5px 8px; font-size: 13px; border: 1px solid #cbd5e0; border-radius: 6px; background: white; cursor: pointer; }
 
-        /* メモタブ（研究カードスタイル） */
-        .memo-list { display: flex; flex-direction: column; gap: 12px; }
-        .memo-card { background: #fff; padding: 14px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; transition: all 0.2s ease-in-out; cursor: pointer; }
-        .memo-date { font-size: 12px; color: #718096; font-weight: bold; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .memo-card .memo-snippet { font-size: 14px; color: #2d3748; line-height: 1.5; white-space: pre-wrap; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
-        .memo-card.open { border-color: #1a365d; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: default; }
-        .memo-card.open .memo-snippet { display: block; -webkit-line-clamp: unset; }
-        
-        .memo-source-display { font-size: 12px; background: #edf2f7; padding: 6px 10px; border-radius: 4px; margin-top: 6px; color: #4a5568; font-style: italic; }
-
-        .memo-expanded-area { display: none; margin-top: 15px; padding-top: 12px; border-top: 1px dashed #e2e8f0; }
-        .memo-card.open .memo-expanded-area { display: block; }
-        
-        /* インライン編集 */
-        .memo-edit-area { display: none; margin-top: 10px; }
-        .memo-edit-textarea { width: 100%; height: 100px; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px; box-sizing: border-box; resize: none; margin-bottom: 6px; }
-        .memo-edit-btns { display: flex; gap: 8px; justify-content: flex-end; }
-        .inline-btn { padding: 6px 12px; font-size: 13px; border-radius: 4px; border: none; cursor: pointer; }
-        .btn-save { background: #38a169; color: white; }
-        .btn-cancel { background: #cbd5e0; color: #333; }
-        
-        .jump-link { display: inline-block; font-size: 12px; color: #2b6cb0; text-decoration: none; font-weight: bold; background: #ebf8ff; padding: 6px 12px; border-radius: 4px; margin-top: 10px; cursor: pointer; }
-        .inline-task-list { font-size: 13px; color: #4a5568; background: #f7fafc; padding: 6px 12px; border-radius: 6px; margin-top: 5px; }
-        .inline-task-item { margin-bottom: 4px; padding: 3px 6px; border-radius: 4px; font-size: 12px; }
-        .inline-task-item.reading { background: #ebf8ff; border-left: 3px solid #3182ce; }
-        .inline-task-item.research { background: #fffaf0; border-left: 3px solid #dd6b20; }
-        .inline-task-item.writing { background: #f0fff4; border-left: 3px solid #38a169; }
-        
-        h4 { margin: 10px 0 5px 0; font-size: 13px; color: #4a5568; }
-        .no-data-msg { text-align: center; color: #a0aec0; font-size: 14px; padding: 20px 0; }
+        .no-data-msg { text-align: center; color: #a0aec0; font-size: 13px; padding: 15px 0; }
     </style>
 </head>
 <body>
@@ -119,21 +97,34 @@
         <div class="content-section">
             <div class="selected-date-title" id="selectedDateTitle">選択日: -----</div>
             
-            <h3>対象の文献・ソース</h3>
-            <input type="text" id="sourceInput" class="source-input" placeholder="例: 著者名『書籍・論文タイトル』p.45-60, もしくはURL等" oninput="saveDiary()">
+            <!-- 新規ノート追加用フォーム -->
+            <h3>📝 新しい読書・研究記録を追加</h3>
+            <div class="record-form-box">
+                <label class="form-label">文献・ソース情報</label>
+                <input type="text" id="formSource" class="form-input" placeholder="例: 山田太郎『研究方法論』p.120">
+                
+                <label class="form-label">抜き書き・引用句（空欄でも可）</label>
+                <textarea id="formQuote" class="form-textarea" placeholder="文献からそのまま書き写す部分..."></textarea>
+                
+                <label class="form-label">自分の考察・メモ</label>
+                <textarea id="formComment" class="form-textarea" placeholder="気付き、疑問、批判、自分の研究との関連性など..."></textarea>
+                
+                <button class="form-submit-btn" onclick="addResearchNote()">この日付に記録カードを追加</button>
+            </div>
 
-            <h3>研究・読書ノート（考察、抜き書きなど）</h3>
-            <textarea id="diaryInput" placeholder="本日のインサイト、課題点、要約などを自由に入力..." oninput="saveDiary()"></textarea>
+            <!-- その日の記録一覧 -->
+            <h3>📋 この日の記録カード</h3>
+            <div id="dayNoteList" class="note-card-list"></div>
 
-            <h3>この日の関連タスク</h3>
+            <!-- その日のタスク -->
+            <h3>📌 この日の関連タスク</h3>
             <div class="priority-selector">
-                <span>カテゴリー:</span>
                 <label class="priority-label"><input type="radio" name="priority_cal" value="reading" checked><span class="dot reading"></span>文献読解</label>
                 <label class="priority-label"><input type="radio" name="priority_cal" value="research"><span class="dot research"></span>実験・調査</label>
                 <label class="priority-label"><input type="radio" name="priority_cal" value="writing"><span class="dot writing"></span>論文執筆</label>
             </div>
             <div class="input-area">
-                <input type="text" id="taskInput" placeholder="例: 〇〇論文の先行研究チェック">
+                <input type="text" id="taskInput" class="task-input-field" placeholder="タスクを入力...">
                 <button onclick="addTask('calendar')">追加</button>
             </div>
             <ul id="taskList"></ul>
@@ -144,14 +135,15 @@
     <div id="tab-memos" class="tab-content">
         <div class="controls-panel">
             <div class="control-row">
-                <label for="memoSortSelect">並べ替え:</label>
+                <label for="memoSortSelect">並べ替え基準:</label>
                 <select id="memoSortSelect" class="control-select" onchange="renderMemoGrid()">
                     <option value="newest">日付の新しい順</option>
                     <option value="oldest">日付の古い順</option>
+                    <option value="source">文献名順（書籍ごとにまとめる）</option>
                 </select>
             </div>
         </div>
-        <div class="memo-list" id="memoGrid"></div>
+        <div class="note-card-list" id="memoGrid"></div>
     </div>
 
     <!-- 3. 全タスク タブ -->
@@ -164,18 +156,18 @@
                 <label class="priority-label"><input type="radio" name="priority_task" value="writing"><span class="dot writing"></span>論文執筆</label>
             </div>
             <div class="input-area" style="margin: 0;">
-                <input type="text" id="taskInputTab" placeholder="今日やること...">
+                <input type="text" id="taskInputTab" class="task-input-field" placeholder="今日やること...">
                 <button onclick="addTask('tasks')">追加</button>
             </div>
         </div>
 
         <div class="controls-panel">
-            <div class="control-row">
+            <div class="control-row" style="margin-bottom:8px;">
                 <label for="taskSortSelect">並べ替え:</label>
                 <select id="taskSortSelect" class="control-select" onchange="renderAllTasks()">
                     <option value="newest">日付の新しい順</option>
                     <option value="oldest">日付の古い順</option>
-                    <option value="priority">カテゴリー別（文献順）</option>
+                    <option value="priority">カテゴリー別</option>
                 </select>
             </div>
             <div class="control-row">
@@ -193,17 +185,21 @@
 </div>
 
 <script>
-    // ローカルストレージキーを変更（旧アプリデータとの衝突を避けるため）
-    const STORAGE_KEY = 'myResearchMemoApp_v1';
-    let todoData = {};
+    const STORAGE_KEY = 'myMultiResearchApp_v2';
+    let appData = {}; // 構造: { "YYYY-MM-DD": { notes: [ {source, quote, comment, id} ], tasks: [ {text, priority} ] } }
     let currentDisplayDate = new Date(); 
     let selectedDateStr = "";
 
     const calendarTitle = document.getElementById('calendarTitle');
     const calendarGrid = document.getElementById('calendarGrid');
     const selectedDateTitle = document.getElementById('selectedDateTitle');
-    const sourceInput = document.getElementById('sourceInput');
-    const diaryInput = document.getElementById('diaryInput');
+    
+    // 入力フォーム群
+    const formSource = document.getElementById('formSource');
+    const formQuote = document.getElementById('formQuote');
+    const formComment = document.getElementById('formComment');
+    
+    const dayNoteList = document.getElementById('dayNoteList');
     const taskInput = document.getElementById('taskInput');
     const taskInputTab = document.getElementById('taskInputTab');
     const taskList = document.getElementById('taskList');
@@ -216,14 +212,8 @@
     function initApp() {
         const savedData = localStorage.getItem(STORAGE_KEY);
         if (savedData) {
-            todoData = JSON.parse(savedData);
+            appData = JSON.parse(savedData);
         }
-        
-        // 旧データ互換性担保（sourceプロパティがない場合への配慮）
-        for (let key in todoData) {
-            if (!todoData[key].source) todoData[key].source = "";
-        }
-
         selectedDateStr = formatDate(new Date());
         renderCalendar();
         renderActiveDateData();
@@ -237,23 +227,20 @@
     }
 
     function switchTab(tabName) {
-        const buttons = document.querySelectorAll('.tab-btn');
-        buttons.forEach(btn => btn.classList.remove('active'));
-        
-        const contents = document.querySelectorAll('.tab-content');
-        contents.forEach(content => content.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
         if (tabName === 'calendar') {
-            buttons[0].classList.add('active');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
             document.getElementById('tab-calendar').classList.add('active');
             renderCalendar();
             renderActiveDateData();
         } else if (tabName === 'memos') {
-            buttons[1].classList.add('active');
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
             document.getElementById('tab-memos').classList.add('active');
             renderMemoGrid();
         } else if (tabName === 'tasks') {
-            buttons[2].classList.add('active');
+            document.querySelectorAll('.tab-btn')[2].classList.add('active');
             document.getElementById('tab-tasks').classList.add('active');
             renderAllTasks();
         }
@@ -265,18 +252,15 @@
         const month = currentDisplayDate.getMonth();
         calendarTitle.innerText = `${year}年${month + 1}月`;
 
-        const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-        weekdays.forEach(w => {
+        ['日', '月', '火', '水', '木', '金', '土'].forEach(w => {
             const div = document.createElement('div');
             div.className = 'weekday';
             div.innerText = w;
             calendarGrid.appendChild(div);
         });
 
-        const firstDayOfMonth = new Date(year, month, 1);
-        const startWeekday = firstDayOfMonth.getDay();
-        const lastDayOfMonth = new Date(year, month + 1, 0);
-        const totalDays = lastDayOfMonth.getDate();
+        const startWeekday = new Date(year, month, 1).getDay();
+        const totalDays = new Date(year, month + 1, 0).getDate();
 
         for (let i = 0; i < startWeekday; i++) {
             const emptyDiv = document.createElement('div');
@@ -292,8 +276,8 @@
             const thisDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             if (thisDateStr === selectedDateStr) dayDiv.classList.add('selected');
 
-            const dayData = todoData[thisDateStr];
-            if (dayData && ((dayData.diary && dayData.diary.trim() !== "") || (dayData.source && dayData.source.trim() !== "") || (dayData.tasks && dayData.tasks.length > 0))) {
+            const dayData = appData[thisDateStr];
+            if (dayData && ((dayData.notes && dayData.notes.length > 0) || (dayData.tasks && dayData.tasks.length > 0))) {
                 dayDiv.classList.add('has-record');
             }
 
@@ -308,12 +292,30 @@
 
     function renderActiveDateData() {
         selectedDateTitle.innerText = `選択日: ${selectedDateStr}`;
-        sourceInput.value = (todoData[selectedDateStr] && todoData[selectedDateStr].source) ? todoData[selectedDateStr].source : '';
-        diaryInput.value = (todoData[selectedDateStr] && todoData[selectedDateStr].diary) ? todoData[selectedDateStr].diary : '';
+        dayNoteList.innerHTML = '';
+
+        if (appData[selectedDateStr] && appData[selectedDateStr].notes && appData[selectedDateStr].notes.length > 0) {
+            appData[selectedDateStr].notes.forEach((note) => {
+                const card = document.createElement('div');
+                card.className = 'note-item-card';
+                card.innerHTML = `
+                    <div class="note-item-header">
+                        <span>CARD ID: ${note.id.substring(0,8)}</span>
+                        <button class="delete-btn" onclick="deleteResearchNote('${note.id}')">カード削除</button>
+                    </div>
+                    <div class="note-item-source">📖 ${escapeHtml(note.source || '不明な文献')}</div>
+                    ${note.quote ? `<div class="note-item-quote">${escapeHtml(note.quote)}</div>` : ''}
+                    <div class="note-item-comment">${escapeHtml(note.comment || '（考察なし）')}</div>
+                `;
+                dayNoteList.appendChild(card);
+            });
+        } else {
+            dayNoteList.innerHTML = '<div class="no-data-msg">この日付の記録カードはまだありません。</div>';
+        }
 
         taskList.innerHTML = '';
-        if (todoData[selectedDateStr] && todoData[selectedDateStr].tasks) {
-            todoData[selectedDateStr].tasks.forEach((taskObj, index) => {
+        if (appData[selectedDateStr] && appData[selectedDateStr].tasks) {
+            appData[selectedDateStr].tasks.forEach((taskObj, index) => {
                 const li = document.createElement('li');
                 li.className = `type-${taskObj.priority}`;
                 li.innerHTML = `
@@ -325,143 +327,101 @@
         }
     }
 
+    function addResearchNote() {
+        const srcVal = formSource.value.trim();
+        const quoteVal = formQuote.value.trim();
+        const commentVal = formComment.value.trim();
+
+        if (srcVal === '' && quoteVal === '' && commentVal === '') {
+            alert('何も入力されていません。');
+            return;
+        }
+
+        if (!appData[selectedDateStr]) {
+            appData[selectedDateStr] = { notes: [], tasks: [] };
+        }
+        if (!appData[selectedDateStr].notes) appData[selectedDateStr].notes = [];
+
+        const newNote = {
+            id: 'note_' + new Date().getTime() + '_' + Math.random().toString(36).substr(2, 5),
+            source: srcVal || '文献情報未入力',
+            quote: quoteVal,
+            comment: commentVal
+        };
+
+        appData[selectedDateStr].notes.push(newNote);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+
+        // フォームをクリア（文献名は続けて打てるように残すか迷いますが一応クリア）
+        formQuote.value = '';
+        formComment.value = '';
+        
+        renderCalendar();
+        renderActiveDateData();
+    }
+
+    function deleteResearchNote(noteId) {
+        if (!confirm('このカードを削除しますか？')) return;
+        if (appData[selectedDateStr] && appData[selectedDateStr].notes) {
+            appData[selectedDateStr].notes = appData[selectedDateStr].notes.filter(n => n.id !== noteId);
+            cleanEmptyKey(selectedDateStr);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            renderCalendar();
+            renderActiveDateData();
+        }
+    }
+
     function renderMemoGrid() {
         memoGrid.innerHTML = '';
         const sortOrder = memoSortSelect.value;
-        const sortedDates = Object.keys(todoData).sort((a, b) => {
-            return sortOrder === 'newest' ? new Date(b) - new Date(a) : new Date(a) - new Date(b);
-        });
         
-        let count = 0;
-
-        sortedDates.forEach(dateStr => {
-            const data = todoData[dateStr];
-            // 日記または文献情報のどちらかがあればカードを表示
-            if (data && ((data.diary && data.diary.trim() !== "") || (data.source && data.source.trim() !== ""))) {
-                count++;
-                const card = document.createElement('div');
-                card.className = 'memo-card';
-                card.id = `memo-card-${dateStr}`;
-                
-                let sourceHtml = '';
-                if (data.source && data.source.trim() !== "") {
-                    sourceHtml = `<div class="memo-source-display">📖 ${escapeHtml(data.source)}</div>`;
-                }
-
-                let tasksHtml = '';
-                if (data.tasks && data.tasks.length > 0) {
-                    tasksHtml = '<h4>この日のタスク:</h4><div class="inline-task-list">';
-                    data.tasks.forEach(t => { 
-                        let typeName = t.priority === 'reading' ? '文献読解' : t.priority === 'research' ? '実験・調査' : '論文執筆';
-                        tasksHtml += `<div class="inline-task-item ${t.priority}">・ [${typeName}] ${escapeHtml(t.text)}</div>`; 
+        // 全データをフラットな配列に変換
+        let allNotes = [];
+        Object.keys(appData).forEach(dateStr => {
+            if (appData[dateStr].notes) {
+                appData[dateStr].notes.forEach(note => {
+                    allNotes.push({
+                        ...note,
+                        date: dateStr
                     });
-                    tasksHtml += '</div>';
-                }
-
-                card.innerHTML = `
-                    <div class="memo-date">
-                        <span>${dateStr}</span>
-                        <span style="font-size:11px; color:#1a365d; font-weight:normal;" class="toggle-status-text">タップして詳細表示</span>
-                    </div>
-                    ${sourceHtml}
-                    <div class="memo-snippet" id="view-text-${dateStr}" style="margin-top:8px;">${escapeHtml(data.diary || '(本文なし)')}</div>
-                    
-                    <div class="memo-expanded-area" id="expanded-area-${dateStr}">
-                        ${tasksHtml}
-                        <div style="display:flex; gap:10px; margin-top:10px;">
-                            <button class="inline-btn" style="background:#1a365d; color:white; font-weight:bold;" onclick="openInlineEditor('${dateStr}', event)">編集する</button>
-                            <div class="jump-link" style="margin-top:0;" onclick="jumpToCalendar('${dateStr}', event)">カレンダーへ ➔</div>
-                        </div>
-                    </div>
-
-                    <div class="memo-edit-area" id="edit-area-${dateStr}" onclick="event.stopPropagation();">
-                        <label style="font-size:12px; font-weight:bold;">文献・ソース:</label>
-                        <input type="text" class="source-input" id="edit-source-${dateStr}" style="margin-bottom:8px;">
-                        <label style="font-size:12px; font-weight:bold;">ノート内容:</label>
-                        <textarea class="memo-edit-textarea" id="edit-textarea-${dateStr}"></textarea>
-                        <div class="memo-edit-btns">
-                            <button class="inline-btn btn-cancel" onclick="closeInlineEditor('${dateStr}')">キャンセル</button>
-                            <button class="inline-btn btn-save" onclick="saveInlineEditor('${dateStr}')">保存</button>
-                        </div>
-                    </div>
-                `;
-
-                card.onclick = () => {
-                    if (card.classList.contains('open')) return;
-                    document.querySelectorAll('.memo-card.open').forEach(c => {
-                        const d = c.id.replace('memo-card-', '');
-                        closeInlineEditor(d);
-                        c.classList.remove('open');
-                        c.querySelector('.toggle-status-text').innerText = 'タップして詳細表示';
-                    });
-                    card.classList.add('open');
-                    card.querySelector('.toggle-status-text').innerText = '閉じる場合は他をタップ';
-                };
-
-                memoGrid.appendChild(card);
+                });
             }
         });
 
-        if (count === 0) {
-            memoGrid.innerHTML = '<div class="no-data-msg">登録された研究メモはありません。</div>';
+        // ソート処理
+        if (sortOrder === 'newest') {
+            allNotes.sort((a, b) => new Date(b.date) - new Date(a.date));
+        } else if (sortOrder === 'oldest') {
+            allNotes.sort((a, b) => new Date(a.date) - new Date(b.date));
+        } else if (sortOrder === 'source') {
+            allNotes.sort((a, b) => a.source.localeCompare(b.source, 'ja'));
         }
-    }
 
-    function openInlineEditor(dateStr, event) {
-        event.stopPropagation();
-        document.getElementById(`view-text-${dateStr}`).style.display = 'none';
-        const sourceDisp = document.getElementById(`memo-card-${dateStr}`).querySelector('.memo-source-display');
-        if (sourceDisp) sourceDisp.style.display = 'none';
-        document.getElementById(`expanded-area-${dateStr}`).style.display = 'none';
-        
-        const editArea = document.getElementById(`edit-area-${dateStr}`);
-        const inputSource = document.getElementById(`edit-source-${dateStr}`);
-        const textarea = document.getElementById(`edit-textarea-${dateStr}`);
-        
-        editArea.style.display = 'block';
-        inputSource.value = todoData[dateStr].source || "";
-        textarea.value = todoData[dateStr].diary || "";
-        textarea.focus();
-    }
-
-    function closeInlineEditor(dateStr) {
-        const editArea = document.getElementById(`edit-area-${dateStr}`);
-        if(editArea) editArea.style.display = 'none';
-        
-        const viewText = document.getElementById(`view-text-${dateStr}`);
-        if(viewText) viewText.style.display = '-webkit-box';
-
-        const card = document.getElementById(`memo-card-${dateStr}`);
-        if(card) {
-            const sourceDisp = card.querySelector('.memo-source-display');
-            if (sourceDisp) sourceDisp.style.display = 'block';
+        if (allNotes.length === 0) {
+            memoGrid.innerHTML = '<div class="no-data-msg">登録された研究メモはまだありません。</div>';
+            return;
         }
-        
-        const expandedArea = document.getElementById(`expanded-area-${dateStr}`);
-        if(expandedArea) expandedArea.style.display = 'block';
-    }
 
-    function saveInlineEditor(dateStr) {
-        const newSource = document.getElementById(`edit-source-${dateStr}`).value;
-        const newVal = document.getElementById(`edit-textarea-${dateStr}`).value;
-        if (!todoData[dateStr]) todoData[dateStr] = { source: "", diary: "", tasks: [] };
-        
-        todoData[dateStr].source = newSource;
-        todoData[dateStr].diary = newVal;
-
-        if ((!newVal || newVal.trim() === "") && (!newSource || newSource.trim() === "") && (!todoData[dateStr].tasks || todoData[dateStr].tasks.length === 0)) {
-            delete todoData[dateStr];
-        }
-        
-        saveToLocalStorage();
-        renderMemoGrid();
-    }
-
-    function jumpToCalendar(dateStr, event) {
-        event.stopPropagation();
-        selectedDateStr = dateStr;
-        currentDisplayDate = new Date(dateStr); 
-        switchTab('calendar');
+        allNotes.forEach(note => {
+            const card = document.createElement('div');
+            card.className = 'note-item-card';
+            card.style.cursor = 'pointer';
+            card.innerHTML = `
+                <div class="note-item-header">
+                    <span>📅 記録日: ${note.date}</span>
+                    <span style="color:#1a365d;">カレンダーへ移動 ➔</span>
+                </div>
+                <div class="note-item-source">📖 ${escapeHtml(note.source)}</div>
+                ${note.quote ? `<div class="note-item-quote">${escapeHtml(note.quote)}</div>` : ''}
+                <div class="note-item-comment">${escapeHtml(note.comment)}</div>
+            `;
+            card.onclick = () => {
+                selectedDateStr = note.date;
+                currentDisplayDate = new Date(note.date);
+                switchTab('calendar');
+            };
+            memoGrid.appendChild(card);
+        });
     }
 
     function renderAllTasks() {
@@ -470,8 +430,8 @@
         const filterValue = taskFilterSelect.value;
 
         let taskArray = [];
-        Object.keys(todoData).forEach(dateStr => {
-            const data = todoData[dateStr];
+        Object.keys(appData).forEach(dateStr => {
+            const data = appData[dateStr];
             if (data && data.tasks) {
                 data.tasks.forEach((taskObj, originalIndex) => {
                     taskArray.push({
@@ -493,9 +453,7 @@
             if (sortOrder === 'oldest') return new Date(a.date) - new Date(b.date);
             if (sortOrder === 'priority') {
                 const weight = { reading: 3, research: 2, writing: 1 };
-                if (weight[b.priority] !== weight[a.priority]) {
-                    return weight[b.priority] - weight[a.priority];
-                }
+                if (weight[b.priority] !== weight[a.priority]) return weight[b.priority] - weight[a.priority];
                 return new Date(b.date) - new Date(a.date);
             }
             return 0;
@@ -520,14 +478,6 @@
         }
     }
 
-    function saveDiary() {
-        prepareDateKey();
-        todoData[selectedDateStr].source = sourceInput.value;
-        todoData[selectedDateStr].diary = diaryInput.value;
-        cleanEmptyKey();
-        saveToLocalStorage();
-    }
-
     function addTask(fromSrc) {
         let text = "";
         let priority = "reading";
@@ -546,11 +496,13 @@
 
         if (text === '') return;
 
-        if (!todoData[targetDateKey]) {
-            todoData[targetDateKey] = { source: "", diary: "", tasks: [] };
+        if (!appData[targetDateKey]) {
+            appData[targetDateKey] = { notes: [], tasks: [] };
         }
-        todoData[targetDateKey].tasks.push({ text: text, priority: priority });
-        saveToLocalStorage();
+        if (!appData[targetDateKey].tasks) appData[targetDateKey].tasks = [];
+        
+        appData[targetDateKey].tasks.push({ text: text, priority: priority });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
         
         if (fromSrc === 'calendar') {
             taskInput.value = '';
@@ -564,10 +516,10 @@
 
     function deleteTask(index, fromSrc, targetDate = null) {
         const dateKey = targetDate ? targetDate : selectedDateStr;
-        if (todoData[dateKey] && todoData[dateKey].tasks) {
-            todoData[dateKey].tasks.splice(index, 1);
+        if (appData[dateKey] && appData[dateKey].tasks) {
+            appData[dateKey].tasks.splice(index, 1);
             cleanEmptyKey(dateKey);
-            saveToLocalStorage();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
             
             if (fromSrc === 'calendar') {
                 renderCalendar();
@@ -578,24 +530,15 @@
         }
     }
 
-    function prepareDateKey() {
-        if (!todoData[selectedDateStr]) {
-            todoData[selectedDateStr] = { source: "", diary: "", tasks: [] };
-        }
-    }
-
-    function cleanEmptyKey(dateKey = null) {
-        const key = dateKey ? dateKey : selectedDateStr;
-        const data = todoData[key];
+    function cleanEmptyKey(dateKey) {
+        const data = appData[dateKey];
         if (data) {
-            if ((!data.diary || data.diary.trim() === "") && (!data.source || data.source.trim() === "") && (!data.tasks || data.tasks.length === 0)) {
-                delete todoData[key];
+            const noNotes = !data.notes || data.notes.length === 0;
+            const noTasks = !data.tasks || data.tasks.length === 0;
+            if (noNotes && noTasks) {
+                delete appData[dateKey];
             }
         }
-    }
-
-    function saveToLocalStorage() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(todoData));
     }
 
     function changeMonth(offset) {
